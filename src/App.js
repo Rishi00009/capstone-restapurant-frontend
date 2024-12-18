@@ -8,11 +8,16 @@ import LoginPage from './components/Login';
 import RestaurantMenu from './pages/RestaurantMenu';
 import ProfileUpdate from './components/ProfileUpdate';
 import Favorites from './pages/Favorites';
+import PaymentPage from './pages/PaymentPage';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe('your-publishable-key-here');
 
 function App() {
   return (
     <div className="App">
-      <Routes>  {/* Wrap the routes with the Routes component */}
+      <Routes>  
         {/* Main Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/signup" element={<Signup />} />
@@ -25,6 +30,16 @@ function App() {
         {/* Profile update */}
         <Route path="/profile/update" element={<ProfileUpdate />} />
         <Route path="/favorites" element={<Favorites />} />
+        
+        {/* Payment Route wrapped with Elements provider */}
+        <Route
+          path="/payment"
+          element={
+            <Elements stripe={stripePromise}>
+              <PaymentPage />
+            </Elements>
+          }
+        />
       </Routes>
     </div>
   );

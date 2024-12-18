@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 const RestaurantList = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const { isLoggedIn, favorites, addFavorite, removeFavorite } = useAuth();
+  const { isLoggedIn, favorites, addFavorite, removeFavorite, logout } = useAuth(); // Add logout function here
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,40 +54,68 @@ const RestaurantList = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-4xl font-bold text-gray-800 mb-6 text-center">Restaurants</h1>
+      {/* Header with login/logout */}
+      <div className="flex justify-between items-center px-6 py-4 bg-white shadow-md fixed top-0 left-0 right-0 z-10">
+        <h2 className="text-xl font-bold text-gray-800">Food App</h2>
+        <div className="space-x-4">
+          {isLoggedIn ? (
+            <>
+              <button
+                onClick={logout}
+                className="px-4 py-2 bg-red-500 text-white rounded-md shadow-md hover:bg-red-600"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => navigate("/login")}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600"
+              >
+                Login
+              </button>
+            </>
+          )}
+        </div>
+      </div>
 
-      <input
-        type="text"
-        placeholder="Search restaurants"
-        value={searchTerm}
-        onChange={handleSearchChange}
-        className="mb-4 p-2 w-full border rounded-md"
-      />
+      <div className="mt-20">
+        <h1 className="text-4xl font-bold text-gray-800 mb-6 text-center">Restaurants</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {filteredRestaurants.map((restaurant) => (
-          <div
-            key={restaurant._id}
-            className="border border-gray-200 p-4 rounded-lg shadow-md hover:shadow-lg"
-            onClick={() => handleRestaurantClick(restaurant._id)}
-          >
-            <h2 className="text-xl font-bold text-gray-800">{restaurant.name}</h2>
-            <p className="text-gray-600">{restaurant.cuisine}</p>
-            <button
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent navigating when clicking the button
-                handleFavoriteToggle(restaurant._id);
-              }}
-              className={`w-full px-4 py-2 mt-2 rounded ${
-                isFavorite(restaurant._id)
-                  ? 'bg-red-500 text-white'
-                  : 'bg-gray-300 text-gray-800'
-              }`}
+        <input
+          type="text"
+          placeholder="Search restaurants"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          className="mb-4 p-2 w-full border rounded-md"
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {filteredRestaurants.map((restaurant) => (
+            <div
+              key={restaurant._id}
+              className="border border-gray-200 p-4 rounded-lg shadow-md hover:shadow-lg"
+              onClick={() => handleRestaurantClick(restaurant._id)}
             >
-              {isFavorite(restaurant._id) ? 'Remove from Favorites' : 'Add to Favorites'}
-            </button>
-          </div>
-        ))}
+              <h2 className="text-xl font-bold text-gray-800">{restaurant.name}</h2>
+              <p className="text-gray-600">{restaurant.cuisine}</p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent navigating when clicking the button
+                  handleFavoriteToggle(restaurant._id);
+                }}
+                className={`w-full px-4 py-2 mt-2 rounded ${
+                  isFavorite(restaurant._id)
+                    ? 'bg-red-500 text-white'
+                    : 'bg-gray-300 text-gray-800'
+                }`}
+              >
+                {isFavorite(restaurant._id) ? 'Remove from Favorites' : 'Add to Favorites'}
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

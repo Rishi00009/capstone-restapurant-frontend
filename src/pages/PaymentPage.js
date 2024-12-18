@@ -1,60 +1,39 @@
-import React, { useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
-import { CardElement, Elements } from '@stripe/react-stripe-js';
-
-const stripePromise = loadStripe('your-public-key-here'); // Replace with your Stripe public key
-
-const PaymentForm = ({ amount }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const handlePayment = async (event) => {
-    event.preventDefault();
-    setLoading(true);
-
-    try {
-      const response = await fetch('http://localhost:3001/create-payment-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount }),
-      });
-      const { clientSecret } = await response.json();
-
-      const stripe = await stripePromise;
-      const result = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-          billing_details: { name: 'User' },
-        },
-      });
-
-      if (result.error) {
-        setError(result.error.message);
-      } else if (result.paymentIntent.status === 'succeeded') {
-        alert('Payment successful!');
-      }
-    } catch (err) {
-      setError('Payment failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handlePayment}>
-      <CardElement />
-      <button type="submit" disabled={loading}>Pay ₹{amount}</button>
-      {error && <div>{error}</div>}
-    </form>
-  );
-};
+import React from 'react';
+import { useLocation } from 'react-router-dom';
+import PaymentForm from './PaymentForm'; // Import the payment form component
 
 const PaymentPage = () => {
+  // Get the location object to access the passed state
+  const location = useLocation();
+  
+  // Retrieve the totalAmount from the location's state, with a fallback of 0 if it's not available
+  const { totalAmount } = location.state || { totalAmount: 0 };
+
+  // Check if the totalAmount is present and valid
+  if (!totalAmount || totalAmount <= 0) {
+    return (
+      <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg">
+        <h1 className="text-center text-4xl font-bold text-gray-800 mb-8">Error</h1>
+        <p className="text-center text-gray-600">Invalid amount. Please try again.</p>
+      </div>
+    );
+  }
+
   return (
-    <Elements stripe={stripePromise}>
-      <PaymentForm amount={500} /> {/* Example amount */}
-    </Elements>
+    <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <h1 className="text-center text-4xl font-bold text-gray-800 mb-8">Payment</h1>
+      
+      <div className="payment-form">
+        <h2 className="text-xl text-gray-800">Payment Details</h2>
+        {/* Display the total amount */}
+        <p className="mb-6 text-gray-700">Amount to pay: ₹{totalAmount}</p>
+        
+        {/* Include the Payment Form */}
+        <PaymentForm amount={totalAmount} handleSuccess={() => alert('Payment successful!')} />
+      </div>
+    </div>
   );
 };
 
 export default PaymentPage;
+

@@ -1,54 +1,60 @@
-import React, { useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import React, { useEffect } from 'react';
 
-// Replace with your own Stripe public key
-const stripePromise = loadStripe('your-publishable-key-here');
+const PaymentForm = ({ amount, handleSuccess }) => {
+  useEffect(() => {
+    // Load Razorpay script
+    const script = document.createElement('script');
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
 
-const PaymentForm = ({ amount }) => {
-  const [loading, setLoading] = useState(false);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
-  const handlePayment = async () => {
-    setLoading(true);
-    
-    const stripe = await stripePromise;
-
-    // Call your backend to create a payment intent
-    const response = await fetch('http://localhost:3001/create-payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount }),
-    });
-    const { clientSecret } = await response.json();
-
-    // Confirm the payment with Stripe
-    const result = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: elements.getElement(CardElement),
-        billing_details: { name: 'User' },
+  const handlePayment = () => {
+    const options = {
+      key: 'YOUR_RAZORPAY_KEY', // Replace with your Razorpay Key
+      amount: amount * 100, // Amount in paise
+      currency: 'INR',
+      name: 'Food App',
+      description: 'Order Payment',
+      handler: function (response) {
+        console.log('Payment Response:', response);
+        if (response.razorpay_payment_id) {
+          handleSuccess();
+        } else {
+          alert('Payment Failed');
+        }
       },
-    });
+      prefill: {
+        name: 'Guest',
+        email: 'guest@example.com',
+        contact: '9876543210',
+      },
+      theme: {
+        color: '#F37254',
+      },
+    };
 
-    if (result.error) {
-      // Handle error
-      alert(result.error.message);
-    } else {
-      if (result.paymentIntent.status === 'succeeded') {
-        alert('Payment successful!');
-      }
+    try {
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error('Razorpay payment initiation failed:', error);
+      alert('Payment initiation failed. Please try again.');
     }
-
-    setLoading(false);
   };
 
   return (
     <div>
-      {/* Payment form goes here */}
-      <div>
-        <h2>Total Amount: ₹{amount}</h2>
-        <button onClick={handlePayment} disabled={loading}>
-          {loading ? 'Processing...' : 'Pay Now'}
-        </button>
-      </div>
+      <button
+        onClick={handlePayment}
+        className="w-full px-4 py-2 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600"
+      >
+        Pay Now
+      </button>
     </div>
   );
 };

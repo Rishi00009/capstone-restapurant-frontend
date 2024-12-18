@@ -6,6 +6,7 @@ const HomePage = () => {
   const { isLoggedIn, logout } = useAuth(); // Assuming `user` contains user details (like username)
   const [restaurants, setRestaurants] = useState([]);
   const [userName, setUserName] = useState(null); // State to store username
+  const [loading, setLoading] = useState(true); // Loading state for user data
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -30,10 +31,14 @@ const HomePage = () => {
           setUserName(data.username); // Assuming the API returns user data with a 'username' field
         } catch (error) {
           console.error('Failed to fetch user data:', error);
+        } finally {
+          setLoading(false); // Set loading to false once data is fetched
         }
       };
 
       fetchUser();
+    } else {
+      setLoading(false); // Set loading to false if the user is not logged in
     }
   }, [isLoggedIn]);
 
@@ -45,7 +50,10 @@ const HomePage = () => {
         <div className="space-x-4">
           {isLoggedIn ? (
             <>
-              <span className="text-gray-800">Welcome, {userName || 'User'}</span>
+              {/* Show loading state or username */}
+              <span className="text-gray-800">
+                {loading ? 'Loading...' : `Welcome, ${userName || 'User'}`}
+              </span>
               <button
                 onClick={logout}
                 className="px-4 py-2 bg-red-500 text-white rounded-md shadow-md hover:bg-red-600"
