@@ -7,7 +7,7 @@ export const useAuth = () => useContext(AuthContext); // Ensure this export is p
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
